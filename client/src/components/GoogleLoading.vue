@@ -1,10 +1,19 @@
 <template>
   <div class="google-loading-container">
     <div class="loading-content">
-      <!-- Animated Sphere Logic -->
-      <div class="sphere-wrapper">
-        <div class="sphere-color"></div>
-        <div class="sphere-blur"></div>
+      <!-- Google Style SVG Line Spinner -->
+      <div class="loader-wrapper">
+        <svg class="circular-loader" viewBox="25 25 50 50">
+          <circle 
+            class="loader-path" 
+            cx="50" 
+            cy="50" 
+            r="20" 
+            fill="none" 
+            stroke-width="4" 
+            stroke-miterlimit="10"
+          />
+        </svg>
       </div>
 
       <!-- Cycling Text -->
@@ -26,7 +35,7 @@ const props = defineProps<{
 
 const defaultMessages = [
   '正在连接神经网络...',
-  'AI 正在构思角色设定...',
+  'AI 正在研判角色设定...',
   '正在绘制独一无二的背景...',
   '正在生成性格与记忆...',
   '即将完成构建...'
@@ -50,6 +59,103 @@ onUnmounted(() => {
 })
 </script>
 
+<style scoped>
+.google-loading-container {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(255, 255, 255, 0.98); /* Cleaner white bg */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.loading-content {
+  display: flex;
+  flex-direction: column; /* Stack vertically for cleaner look */
+  align-items: center;
+  gap: 32px;
+}
+
+/* Loader Wrapper */
+.loader-wrapper {
+  position: relative;
+  width: 60px;
+  height: 60px;
+}
+
+/* Circular Loader - Material Design Standard */
+.circular-loader {
+  animation: rotate 2s linear infinite;
+  height: 100%;
+  transform-origin: center center;
+  width: 100%;
+}
+
+.loader-path {
+  stroke-dasharray: 1, 200;
+  stroke-dashoffset: 0;
+  animation: dash 1.5s ease-in-out infinite, color 6s ease-in-out infinite;
+  stroke-linecap: round;
+}
+
+/* Animations */
+@keyframes rotate {
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes dash {
+  0% {
+    stroke-dasharray: 1, 200;
+    stroke-dashoffset: 0;
+  }
+  50% {
+    stroke-dasharray: 89, 200;
+    stroke-dashoffset: -35px;
+  }
+  100% {
+    stroke-dasharray: 89, 200;
+    stroke-dashoffset: -124px;
+  }
+}
+
+@keyframes color {
+  100%, 0% { stroke: #4285f4; } /* Blue */
+  40% { stroke: #ea4335; }      /* Red */
+  66% { stroke: #fbbc05; }      /* Yellow */
+  80%, 90% { stroke: #34a853; } /* Green */
+}
+
+/* Text Styling */
+.text-wrapper {
+  height: 30px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 300px;
+}
+
+.gradient-text {
+  font-family: 'Inter', sans-serif; /* Clean font */
+  font-size: 1rem;
+  font-weight: 500;
+  color: #5f6368; /* Google Grey */
+  text-align: center;
+  position: absolute;
+  width: 100%;
+}
+
+/* Transitions */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.fade-enter-from { opacity: 0; transform: translateY(10px); }
+.fade-leave-to { opacity: 0; transform: translateY(-10px); }
+</style>
 <style scoped>
 .google-loading-container {
   position: fixed;

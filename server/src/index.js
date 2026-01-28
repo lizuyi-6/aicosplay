@@ -16,14 +16,23 @@ const { v4: uuidv4 } = require('uuid');
 const Role = require('./models/Role');
 const { generateBackgroundSvg } = require('./services/svgGenerator');
 
+const { MongoMemoryServer } = require('mongodb-memory-server');
+
 const connectDB = async () => {
   try {
-    await mongoose.connect(process.env.MONGO_URI, { serverSelectionTimeoutMS: 5000 });
-    console.log('✅ MongoDB 连接成功');
+    console.log('📦 正在启动内置数据库 (Embedded MongoDB)...');
+    const mongod = await MongoMemoryServer.create();
+    const uri = mongod.getUri();
+
+    console.log(`🔗 数据库 URI: ${uri}`);
+    await mongoose.connect(uri);
+    console.log('✅ 内置 MongoDB 连接成功！');
+
+    // Seed data if empty
     await seedRoles();
   } catch (err) {
-    console.warn('⚠️ MongoDB 连接失败:', err.message);
-    console.warn('⚠️ 切换到内存存储模式 (数据将在重启后丢失)');
+    console.error('❌ 数据库启动失败:', err);
+    console.log('⚠️ 尝试降级到内存模式...');
     global.useMemoryDB = true;
     await seedRoles();
   }
