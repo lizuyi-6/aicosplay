@@ -1,0 +1,278 @@
+/* ========================================
+   AI Role-Play Chat - Warm Light Design System
+   ======================================== */
+
+:root {
+  /* Color Palette - Warm Light & Cozy */
+  --color-bg-primary: #f9f7f2;
+  /* Warm Cream/Beige */
+  --color-bg-secondary: #f0eee9;
+  --color-bg-tertiary: #e8e6e1;
+  --color-bg-elevated: #ffffff;
+
+  /* Accent Colors - Elegant & Minimal */
+  --color-accent-primary: #1d1d1f;
+  /* Elegant Black */
+  --color-accent-secondary: #5e5ce6;
+  /* Soft Indigo */
+  --color-accent-tertiary: #ff9f0a;
+  /* Warm Orange */
+
+  --color-accent-gradient: linear-gradient(135deg, #2c2c2e 0%, #1d1d1f 100%);
+  --color-accent-gradient-hover: linear-gradient(135deg, #3a3a3c 0%, #2c2c2e 100%);
+
+  --color-accent-glow: rgba(0, 0, 0, 0.15);
+  --color-accent-glow-secondary: rgba(94, 92, 230, 0.2);
+
+  /* Text Colors */
+  --color-text-primary: #1d1d1f;
+  --color-text-secondary: #48484a;
+  --color-text-muted: #86868b;
+
+  /* Status Colors */
+  --color-success: #34c759;
+  --color-warning: #ffcc00;
+  --color-error: #ff3b30;
+
+  /* Glassmorphism - Warm */
+  --glass-bg: rgba(255, 255, 255, 0.65);
+  --glass-bg-hover: rgba(255, 255, 255, 0.85);
+  --glass-border: rgba(0, 0, 0, 0.04);
+  --glass-border-highlight: rgba(255, 255, 255, 0.4);
+  --glass-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+  --glass-blur: blur(24px);
+
+  /* Spacing */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2.5rem;
+  --spacing-2xl: 4rem;
+
+  /* Border Radius */
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-xl: 32px;
+  --radius-full: 9999px;
+
+  /* Transitions */
+  --transition-fast: 200ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  --transition-normal: 350ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  --transition-slow: 600ms cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  /* Typography */
+  --font-family: 'SF Pro Text', 'SF Pro Icons', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.5rem;
+  --font-size-2xl: 2rem;
+  --font-size-3xl: 3.5rem;
+}
+
+/* ========================================
+   Global Styles
+   ======================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-family);
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  line-height: 1.6;
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Removed Cosmic Background & Noise - Pure Clean White */
+body::before,
+body::after {
+  display: none;
+}
+
+a {
+  color: var(--color-accent-secondary);
+  text-decoration: none;
+  transition: all var(--transition-fast);
+  position: relative;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* ========================================
+   Utility Classes
+   ======================================== */
+
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--glass-shadow);
+  transition: all var(--transition-normal);
+}
+
+.glass-card-hover {
+  cursor: pointer;
+}
+
+.glass-card-hover:hover {
+  background: var(--glass-bg-hover);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.06);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+/* Buttons Refined - Dark Elegance */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  padding: 12px 28px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  border: none;
+  border-radius: 99px;
+  /* Pill shape */
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  letter-spacing: 0;
+}
+
+.btn-primary {
+  background: #1d1d1f;
+  /* Elegant Black */
+  color: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-primary:hover {
+  background: #333333;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.6);
+  color: #1d1d1f;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.btn-secondary:hover {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.12);
+}
+
+.btn-icon {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 50%;
+}
+
+/* Input Styles - Warm Light */
+.input {
+  width: 100%;
+  padding: 14px 18px;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 16px;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-base);
+  transition: all var(--transition-fast);
+  font-family: inherit;
+}
+
+.input:focus {
+  outline: none;
+  background: #ffffff;
+  border-color: var(--color-accent-primary);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.input::placeholder {
+  color: var(--color-text-muted);
+}
+
+textarea.input {
+  resize: vertical;
+  min-height: 120px;
+}
+
+/* ========================================
+   Animations
+   ======================================== */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.6s ease-out forwards;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.6s ease-out forwards;
+}
+
+/* ========================================
+   Scrollbar Styles (Light)
+   ======================================== */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d1d1d6;
+  border-radius: 99px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #b0b0b6;
+}
