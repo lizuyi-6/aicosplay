@@ -26,7 +26,7 @@
 **/.vscode
 
 # Database
-**/data_db
+# **/data_db  # Commented out to allow database files in git
 
 # Uploads
 **/server/uploads
