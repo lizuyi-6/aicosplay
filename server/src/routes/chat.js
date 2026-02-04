@@ -53,6 +53,15 @@ global.memoryMessages = global.memoryMessages || [];
 router.post('/', async (req, res) => {
     try {
         const { roleId, conversationId, message, imageUrl } = req.body;
+        const userId = req.userId; // Get userId from cookie middleware
+
+        // Debug: Log userId
+        console.log(`[Chat POST] userId: ${userId}, roleId: ${roleId}, conversationId: ${conversationId}`);
+
+        if (!userId) {
+            console.error('[Chat POST] ERROR: userId is undefined!');
+            return res.status(401).json({ message: '用户身份未识别，请刷新页面重试' });
+        }
 
         if (!roleId || !conversationId || (!message && !imageUrl)) {
             return res.status(400).json({ message: '缺少必填字段' });
@@ -69,17 +78,24 @@ router.post('/', async (req, res) => {
             return res.status(404).json({ message: '角色不存在' });
         }
 
-        // Get conversation history (last 20 messages)
+        // Get conversation history (last 20 messages) - filtered by userId
         let history;
         if (global.useMemoryDB) {
             history = global.memoryMessages
-                .filter(m => m.roleId === roleId && m.conversationId === conversationId)
+                .filter(m => m.userId === userId && m.roleId === roleId && m.conversationId === conversationId)
                 .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
                 .slice(-20);
         } else {
-            history = await Message.find({ roleId, conversationId })
+            history = await Message.find({ userId, roleId, conversationId })
                 .sort({ createdAt: 1 })
                 .limit(20);
+        }
+
+        // 🔍 Debug: Log conversation history
+        console.log(`[Chat Debug] RoleId: ${roleId}, ConversationId: ${conversationId}`);
+        console.log(`[Chat Debug] Found ${history.length} history messages`);
+        if (history.length > 0) {
+            console.log(`[Chat Debug] History preview:`, history.map(m => ({ role: m.role, content: m.content.substring(0, 50) + '...' })));
         }
 
         // Build messages array for API
@@ -129,6 +145,7 @@ router.post('/', async (req, res) => {
         const timestamp = new Date();
         if (global.useMemoryDB) {
             global.memoryMessages.push({
+                userId,
                 roleId,
                 conversationId,
                 role: 'user',
@@ -138,6 +155,7 @@ router.post('/', async (req, res) => {
             });
         } else {
             const userMessage = new Message({
+                userId,
                 roleId,
                 conversationId,
                 role: 'user',
@@ -210,6 +228,7 @@ router.post('/', async (req, res) => {
         // Save assistant response
         if (global.useMemoryDB) {
             global.memoryMessages.push({
+                userId,
                 roleId,
                 conversationId,
                 role: 'assistant',
@@ -218,6 +237,7 @@ router.post('/', async (req, res) => {
             });
         } else {
             const assistantMessage = new Message({
+                userId,
                 roleId,
                 conversationId,
                 role: 'assistant',
@@ -248,19 +268,20 @@ router.post('/', async (req, res) => {
     }
 });
 
-// GET conversation history
+// GET conversation history - filtered by userId
 router.get('/history/:roleId/:conversationId', async (req, res) => {
     try {
         const { roleId, conversationId } = req.params;
+        const userId = req.userId;
 
         if (global.useMemoryDB) {
             const messages = global.memoryMessages
-                .filter(m => m.roleId === roleId && m.conversationId === conversationId)
+                .filter(m => m.userId === userId && m.roleId === roleId && m.conversationId === conversationId)
                 .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
             return res.json(messages);
         }
 
-        const messages = await Message.find({ roleId, conversationId })
+        const messages = await Message.find({ userId, roleId, conversationId })
             .sort({ createdAt: 1 });
         res.json(messages);
     } catch (error) {
@@ -268,16 +289,17 @@ router.get('/history/:roleId/:conversationId', async (req, res) => {
     }
 });
 
-// GET all conversations for a role
+// GET all conversations for a role - filtered by userId
 router.get('/conversations/:roleId', async (req, res) => {
     try {
         const { roleId } = req.params;
+        const userId = req.userId;
 
         if (global.useMemoryDB) {
-            // Group by conversationId
+            // Group by conversationId for this user only
             const groups = {};
             global.memoryMessages
-                .filter(m => m.roleId === roleId)
+                .filter(m => m.userId === userId && m.roleId === roleId)
                 .forEach(m => {
                     if (!groups[m.conversationId]) {
                         groups[m.conversationId] = {
@@ -295,8 +317,9 @@ router.get('/conversations/:roleId', async (req, res) => {
             return res.json(conversations);
         }
 
+        const mongoose = require('mongoose');
         const conversations = await Message.aggregate([
-            { $match: { roleId: require('mongoose').Types.ObjectId(roleId) } },
+            { $match: { userId: userId, roleId: new mongoose.Types.ObjectId(roleId) } },
             {
                 $group: {
                     _id: '$conversationId',

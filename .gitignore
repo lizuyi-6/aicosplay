@@ -24,3 +24,9 @@
 # IDE
 **/.idea
 **/.vscode
+
+# Database
+**/data_db
+
+# Uploads
+**/server/uploads

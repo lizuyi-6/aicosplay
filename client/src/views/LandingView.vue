@@ -16,7 +16,7 @@
     <!-- SECTION 1: HERO -->
     <section ref="section0" class="section hero-section" :class="{ 'active': currentSection >= 0 }">
       <div class="grid-bg"></div>
-      
+
       <div class="floating-decor left animate-float-slow">
         <div class="glass-card">
           <div class="card-header">
@@ -128,7 +128,7 @@
     <!-- SECTION 3: FEATURES -->
     <section ref="section2" class="section features-section" :class="{ 'active': currentSection >= 2 }">
       <div class="watermark-number">02</div>
-      
+
       <div class="section-container">
         <div class="text-block reveal-on-active">
           <h2 class="section-title">02. 核心特性</h2>
@@ -196,7 +196,7 @@
            <div class="planet-core"></div>
         </div>
       </div>
-      
+
       <div class="lore-content reveal-on-active">
         <h2>2140. Digital Horizon.</h2>
         <p>我们不再区分虚拟与现实。<br>欢迎来到新世界。</p>
@@ -205,7 +205,7 @@
 
     <footer ref="section4" class="main-footer" :class="{ 'active': currentSection >= 4 }">
       <div class="grid-bg"></div>
-      
+
       <!-- LEFT FOOTER: Socials -->
       <div class="footer-corner left reveal-on-active delay-2">
         <h4>CONNECT</h4>
@@ -225,14 +225,14 @@
         <h3>准备好了吗？</h3>
         <router-link to="/app" class="footer-cta">进入系统</router-link>
       </div>
-      
+
       <div class="copyright">&copy; 2026 NeuralUniverse Inc.</div>
     </footer>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref } from 'vue'
 
 const currentSection = ref(0)
 const isScrolling = ref(false)
@@ -246,9 +246,9 @@ const sections = [section0, section1, section2, section3, section4]
 
 function scrollToSection(index: number) {
   if (index < 0 || index >= sections.length) return
-  
+
   currentSection.value = index
-  const target = sections[index].value
+  const target = sections[index]?.value
   if (target) {
     target.scrollIntoView({ behavior: 'smooth' })
   }
@@ -256,9 +256,9 @@ function scrollToSection(index: number) {
 
 function handleWheel(e: WheelEvent) {
   e.preventDefault()
-  
+
   if (isScrolling.value) return
-  
+
   if (e.deltaY > 20) {
     isScrolling.value = true
     scrollToSection(currentSection.value + 1)
@@ -345,8 +345,8 @@ function updateMouse(e: MouseEvent) {
 
 /* HERO */
 .hero-section { background: #fff; }
-.grid-bg { 
-  position: absolute; inset: 0; 
+.grid-bg {
+  position: absolute; inset: 0;
   background-image: linear-gradient(#f2f2f2 1px, transparent 1px), linear-gradient(90deg, #f2f2f2 1px, transparent 1px);
   background-size: 60px 60px; mask-image: radial-gradient(circle, black 30%, transparent 80%); opacity: 0.5; z-index: 0;
 }

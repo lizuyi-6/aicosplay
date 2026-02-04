@@ -17,6 +17,7 @@ export const useChatStore = defineStore('chat', () => {
     const conversationId = ref<string>(generateConversationId())
     const isStreaming = ref(false)
     const error = ref<string | null>(null)
+    const conversations = ref<{ _id: string; lastMessage: string; lastTime: string }[]>([])
 
     function generateConversationId(): string {
         return `conv_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
@@ -25,6 +26,17 @@ export const useChatStore = defineStore('chat', () => {
     function startNewConversation() {
         messages.value = []
         conversationId.value = generateConversationId()
+    }
+
+    async function fetchConversations(roleId: string) {
+        try {
+            const response = await fetch(`${API_BASE}/chat/conversations/${roleId}`, { credentials: 'include' })
+            if (!response.ok) throw new Error('获取对话列表失败')
+            conversations.value = await response.json()
+        } catch (e) {
+            console.error('Failed to fetch conversations:', e)
+            conversations.value = []
+        }
     }
 
     async function loadHistory(roleId: string, convId: string) {
@@ -62,6 +74,12 @@ export const useChatStore = defineStore('chat', () => {
 
         isStreaming.value = true
 
+        // Keep a reference to the assistant message for type safety
+        const assistantMsg = messages.value[assistantIndex]
+        if (!assistantMsg) {
+            throw new Error('Assistant message not found')
+        }
+
         try {
             const response = await fetch(`${API_BASE}/chat`, {
                 method: 'POST',
@@ -98,10 +116,10 @@ export const useChatStore = defineStore('chat', () => {
                         try {
                             const data = JSON.parse(line.slice(6))
                             if (data.content) {
-                                messages.value[assistantIndex].content += data.content
+                                assistantMsg.content += data.content
                             }
                             if (data.done) {
-                                messages.value[assistantIndex].isStreaming = false
+                                assistantMsg.isStreaming = false
                             }
                             if (data.error) {
                                 throw new Error(data.error)
@@ -115,10 +133,12 @@ export const useChatStore = defineStore('chat', () => {
 
         } catch (e) {
             error.value = (e as Error).message
-            messages.value[assistantIndex].content = '抱歉，发生了错误：' + (e as Error).message
+            assistantMsg.content = '抱歉，发生了错误：' + (e as Error).message
         } finally {
             isStreaming.value = false
-            messages.value[assistantIndex].isStreaming = false
+            assistantMsg.isStreaming = false
+            // Refresh conversation list to show the new/updated conversation
+            await fetchConversations(roleId)
         }
     }
 
@@ -127,8 +147,11 @@ export const useChatStore = defineStore('chat', () => {
         conversationId,
         isStreaming,
         error,
+        conversations,
         startNewConversation,
+        fetchConversations,
         loadHistory,
         sendMessage
     }
 })
+

@@ -29,6 +29,23 @@
           <h4>角色背景</h4>
           <p>{{ currentRole.description }}</p>
         </div>
+
+        <!-- Conversation History List -->
+        <div class="history-section" v-if="chatStore.conversations.length > 0">
+          <h4>历史对话</h4>
+          <div class="history-list">
+            <div 
+              v-for="conv in chatStore.conversations" 
+              :key="conv._id"
+              class="history-item"
+              :class="{ 'active': conv._id === chatStore.conversationId }"
+              @click="loadConversation(conv._id)"
+            >
+              <div class="history-preview">{{ truncateText(conv.lastMessage, 40) }}</div>
+              <div class="history-time">{{ formatTime(conv.lastTime) }}</div>
+            </div>
+          </div>
+        </div>
       </div>
       
       <!-- Collapse Toggle Button -->
@@ -122,6 +139,9 @@ onMounted(async () => {
     }
   }
   
+  // Fetch conversation history for this role
+  await chatStore.fetchConversations(roleId)
+  
   if (chatStore.messages.length === 0) {
     chatStore.startNewConversation()
   }
@@ -173,6 +193,44 @@ function sendMessage(content: string, imageUrl?: string) {
 
 function previewImage(url: string) {
   previewImageUrl.value = url
+}
+
+// Load a specific conversation from history
+async function loadConversation(convId: string) {
+  if (!currentRole.value) return
+  await chatStore.loadHistory(currentRole.value._id, convId)
+}
+
+// Truncate text for preview
+function truncateText(text: string, maxLen: number): string {
+  if (!text) return '(无内容)'
+  return text.length > maxLen ? text.substring(0, maxLen) + '...' : text
+}
+
+// Format timestamp for display
+function formatTime(dateStr: string): string {
+  if (!dateStr) return ''
+  const date = new Date(dateStr)
+  const now = new Date()
+  const diff = now.getTime() - date.getTime()
+  
+  // Less than 1 hour
+  if (diff < 3600000) {
+    const mins = Math.floor(diff / 60000)
+    return mins <= 1 ? '刚刚' : `${mins}分钟前`
+  }
+  // Less than 1 day
+  if (diff < 86400000) {
+    const hours = Math.floor(diff / 3600000)
+    return `${hours}小时前`
+  }
+  // Less than 7 days
+  if (diff < 604800000) {
+    const days = Math.floor(diff / 86400000)
+    return `${days}天前`
+  }
+  // Older - show date
+  return date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' })
 }
 </script>
 
@@ -331,6 +389,69 @@ function previewImage(url: string) {
   font-size: 0.95rem;
   color: #48484a;
   line-height: 1.6;
+}
+
+/* History Section */
+.history-section {
+  margin-top: 1.5rem;
+  border-top: 1px solid rgba(0,0,0,0.06);
+  padding-top: 1rem;
+}
+
+.history-section h4 {
+  font-size: 0.8rem;
+  color: #888;
+  margin-bottom: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.history-list::-webkit-scrollbar {
+  width: 4px;
+}
+.history-list::-webkit-scrollbar-thumb {
+  background: #d1d1d6;
+  border-radius: 4px;
+}
+
+.history-item {
+  padding: 0.75rem;
+  background: #ffffff;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid rgba(0,0,0,0.04);
+}
+
+.history-item:hover {
+  background: #f8f7f5;
+  transform: translateX(4px);
+}
+
+.history-item.active {
+  background: #e8f4ff;
+  border-color: rgba(0,122,255,0.2);
+}
+
+.history-preview {
+  font-size: 0.9rem;
+  color: #333;
+  margin-bottom: 4px;
+  line-height: 1.4;
+}
+
+.history-time {
+  font-size: 0.75rem;
+  color: #999;
 }
 
 /* Main Chat Area */

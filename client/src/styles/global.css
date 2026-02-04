@@ -1,0 +1,43 @@
+/* ========================================
+   Global Resets & Typography
+   ======================================== */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    font-size: 16px;
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: var(--font-family);
+    background: var(--color-bg-primary);
+    color: var(--color-text-primary);
+    line-height: 1.6;
+    min-height: 100vh;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Removed Cosmic Background & Noise - Pure Clean White */
+body::before,
+body::after {
+    display: none;
+}
+
+a {
+    color: var(--color-accent-secondary);
+    text-decoration: none;
+    transition: all var(--transition-fast);
+    position: relative;
+}
+
+a:hover {
+    text-decoration: underline;
+}

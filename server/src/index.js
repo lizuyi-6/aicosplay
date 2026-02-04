@@ -20,13 +20,23 @@ const { MongoMemoryServer } = require('mongodb-memory-server');
 
 const connectDB = async () => {
   try {
-    console.log('📦 正在启动内置数据库 (Embedded MongoDB)...');
-    const mongod = await MongoMemoryServer.create();
+    console.log('📦 正在启动内置数据库 (Embedded MongoDB with persistence)...');
+
+    // Use persistent storage in data_db directory
+    const dbPath = path.join(__dirname, '..', '..', 'data_db');
+    console.log(`💾 数据存储路径: ${dbPath}`);
+
+    const mongod = await MongoMemoryServer.create({
+      instance: {
+        dbPath: dbPath,
+        storageEngine: 'wiredTiger'
+      }
+    });
     const uri = mongod.getUri();
 
     console.log(`🔗 数据库 URI: ${uri}`);
     await mongoose.connect(uri);
-    console.log('✅ 内置 MongoDB 连接成功！');
+    console.log('✅ 内置 MongoDB 连接成功 (数据已持久化)！');
 
     // Seed data if empty
     await seedRoles();
@@ -84,7 +94,7 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// 🌱 Seeding Function
+// 🌱 Seeding Function - 确保所有预设角色始终存在
 const seedRoles = async () => {
   try {
     const examples = [
@@ -173,29 +183,36 @@ const seedRoles = async () => {
       return;
     }
 
-    const count = await Role.countDocuments({ isSystem: true });
-    if (count > 0) {
-      // Check if any system roles are missing backgroundSvg
-      const rolesWithoutBg = await Role.find({ isSystem: true, backgroundSvg: { $in: ['', null] } });
-      if (rolesWithoutBg.length > 0) {
-        console.log(`🎨 [MongoDB] 为 ${rolesWithoutBg.length} 个角色生成 AI 背景...`);
-        for (const role of rolesWithoutBg) {
-          const backgroundSvg = await generateBackgroundSvg(role.name, role.personality, role.description);
-          await Role.updateOne({ _id: role._id }, { $set: { backgroundSvg } });
-          console.log(`  ✅ ${role.name}`);
-        }
+    // 确保所有8个预设角色都存在 - 逐个检查并补充缺失的角色
+    console.log('🔍 检查预设角色完整性...');
+    let createdCount = 0;
+    let updatedCount = 0;
+
+    for (const example of examples) {
+      const existingRole = await Role.findOne({ name: example.name, isSystem: true });
+
+      if (!existingRole) {
+        // 角色不存在，创建它
+        console.log(`🌱 创建缺失的角色: ${example.name}`);
+        const backgroundSvg = await generateBackgroundSvg(example.name, example.personality, example.description);
+        await Role.create({ ...example, backgroundSvg });
+        console.log(`  ✅ ${example.name} 创建成功`);
+        createdCount++;
+      } else if (!existingRole.backgroundSvg || existingRole.backgroundSvg === '') {
+        // 角色存在但缺少背景，更新它
+        console.log(`🎨 为 ${example.name} 生成背景...`);
+        const backgroundSvg = await generateBackgroundSvg(example.name, example.personality, example.description);
+        await Role.updateOne({ _id: existingRole._id }, { $set: { backgroundSvg } });
+        console.log(`  ✅ ${example.name} 背景已更新`);
+        updatedCount++;
       }
-      return;
     }
 
-    console.log('🌱 正在初始化示例角色...');
-    console.log('🎨 正在为每个角色生成 AI 背景（这可能需要一些时间）...');
-    for (const example of examples) {
-      const backgroundSvg = await generateBackgroundSvg(example.name, example.personality, example.description);
-      await Role.create({ ...example, backgroundSvg });
-      console.log(`  ✅ ${example.name}`);
+    if (createdCount > 0 || updatedCount > 0) {
+      console.log(`✅ [MongoDB] 角色同步完成: 新建 ${createdCount} 个, 更新 ${updatedCount} 个`);
+    } else {
+      console.log('✅ [MongoDB] 所有 8 个预设角色已就绪');
     }
-    console.log(`✅ [MongoDB] 成功初始化 ${examples.length} 个示例角色`);
   } catch (err) {
     console.error('❌ 初始化角色失败:', err);
   }
